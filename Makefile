@@ -1,8 +1,8 @@
 SHELL := /bin/bash
-CC := gcc
-OPTFLAGS := -O1 -fno-aggressive-loop-optimizations
+OPTFLAGS := -O1 -g -fno-aggressive-loop-optimizations
 CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -fPIC
 LDFLAGS := -lcmocka -lm -lftfp
+CC := aarch64-linux-gnu-gcc
 
 LD_LIBRARY_PATH=.
 
@@ -66,7 +66,7 @@ clean:
 run_tests:
 	set -x ; \
 	number=1 ; while [[ $$number -le 61  ]] ; do \
-		echo "Testing" $$number "int bits..." && make clean && python -B generate_base.py --file base.h --pyfile base.py --intbits $$number && make test && LD_LIBRARY_PATH=. ./test || exit 1; \
+		echo "Testing" $$number "int bits..." && make clean && python -B generate_base.py --file base.h --pyfile base.py --intbits $$number && make test && LD_LIBRARY_PATH=. QEMU_LD_PREFIX=/usr/aarch64-linux-gnu qemu-aarch64 ./test || exit 1; \
 		((number = number + 1)) ; \
 	done
 
