@@ -8,7 +8,7 @@ LD_LIBRARY_PATH=.
 
 progs             := test perf_test generate_test_helper
 libs              := libftfp.so
-ftfp_src          := ftfp.c autogen.c internal.c cordic.c power.c debug.c
+ftfp_src          := ftfp.c autogen.c internal.c cordic.c power.c debug.c double.c
 ftfp_inc          := ftfp.h internal.h base.h lut.h
 ftfp_obj          := $(ftfp_src:.c=.o)
 ftfp_pre          := $(ftfp_src:.c=.pre)
@@ -41,10 +41,14 @@ lut.h : generate_base.py
 	python3 generate_base.py --lutfile lut.h
 
 %.o: %.c ${ftfp_inc} Makefile
-	$(CC) -c -o $@ $(CFLAGS) $<
+	if [[ "$<" = "double.c" || "$<" = "test.c" ]]; then \
+		$(CC) -c -o $@ $(CFLAGS) -march=armv8-a+nosimd $<; \
+	else \
+		$(CC) -c -o $@ $(CFLAGS) -march=armv8-a+nosimd+nofp $<; \
+	fi
 
-libftfp.so: $(ftfp_obj)
-	$(CC) ${CFLAGS} -shared -o $@ $+
+libftfp.so: $(ftfp_obj) $(dbl_obj)
+	$(CC) ${CFLAGS} -march=armv8-a+nosimd -shared -o $@ $+
 
 perf_test: $(perf_ftfp_obj) $(libs)
 	$(CC) -lftfp -L . -o $@ $(CFLAGS) $<
