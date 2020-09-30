@@ -51,7 +51,7 @@ libftfp.so: $(ftfp_obj) $(dbl_obj)
 	$(CC) ${CFLAGS} -march=armv8-a+nosimd -shared -o $@ $+
 
 perf_test: $(perf_ftfp_obj) $(libs)
-	$(CC) -lftfp -L . -o $@ $(CFLAGS) $<
+	$(CC) -lftfp -L . -o $@ $(CFLAGS) $< ${LDFLAGS}
 
 test: $(test_ftfp_obj) $(libs)
 	$(CC) -L . ${CFLAGS} -o $@ $< ${LDFLAGS}
@@ -71,6 +71,13 @@ run_tests:
 	set -x ; \
 	number=1 ; while [[ $$number -le 61  ]] ; do \
 		echo "Testing" $$number "int bits..." && make clean && python -B generate_base.py --file base.h --pyfile base.py --intbits $$number && make test && LD_LIBRARY_PATH=. QEMU_LD_PREFIX=/usr/aarch64-linux-gnu qemu-aarch64 ./test || exit 1; \
+		((number = number + 1)) ; \
+	done
+
+run_tests_remote:
+	set -x ; \
+	number=1 ; while [[ $$number -le 61  ]] ; do \
+		echo "Testing" $$number "int bits..." && make clean && python -B generate_base.py --file base.h --pyfile base.py --intbits $$number && make test && scp libftfp.so test ubuntu@192.168.1.3:~ && ssh ubuntu@192.168.1.3 "LD_LIBRARY_PATH=. ./test" || exit 1; \
 		((number = number + 1)) ; \
 	done
 
