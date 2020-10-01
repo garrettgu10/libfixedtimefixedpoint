@@ -90,8 +90,8 @@ fixed fix_tan(fixed op1);
  * edges. */
 //fixed fix_sin_fast(fixed op1);
 
-fixed  fix_convert_from_double(double d);
-double fix_convert_to_double(fixed op1);
+fixed  fix_convert_from_double_internal(uint64_t d);
+uint64_t fix_convert_to_double_internal(fixed op1);
 
 fixed  fix_convert_from_int64(int64_t i);
 

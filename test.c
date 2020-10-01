@@ -16,6 +16,16 @@
 #include "debug.h"
 #include "lut.h"
 
+fixed fix_convert_from_double(double d) {
+  uint64_t c = *(uint64_t *)&d;
+  return fix_convert_from_double_internal(c);
+}
+
+double fix_convert_to_double(fixed f) {
+  uint64_t res = fix_convert_to_double_internal(f);
+  return *(double *)&res;
+}
+
 static void null_test_success(void **state) {
   //(void) state;
 }

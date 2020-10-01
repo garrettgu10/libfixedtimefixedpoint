@@ -41,7 +41,7 @@ lut.h : generate_base.py
 	python3 generate_base.py --lutfile lut.h
 
 %.o: %.c ${ftfp_inc} Makefile
-	if [[ "$<" = "double.c" || "$<" = "test.c" ]]; then \
+	if [[ "$<" = "test.c" ]]; then \
 		$(CC) -c -o $@ $(CFLAGS) -march=armv8-a+nosimd $<; \
 	else \
 		$(CC) -c -o $@ $(CFLAGS) -march=armv8-a+nosimd+nofp $<; \

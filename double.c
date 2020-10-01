@@ -2,12 +2,9 @@
 #include "ftfp.h"
 #include "internal.h"
 #include <math.h>
-
 #include <stdint.h>
 
-
-
-fixed fix_convert_from_double(double d) {
+fixed fix_convert_from_double_internal(uint64_t d) {
   uint64_t bits = *(uint64_t*) &d;
   uint32_t exponent_base = ((bits >> 52) & 0x7ff);
   uint64_t mantissa_base = (bits & ((1ull <<52)-1));
@@ -57,7 +54,7 @@ fixed fix_convert_from_double(double d) {
     MASK_UNLESS(sign, FIX_DATA_BITS(result_neg));
 }
 
-double fix_convert_to_double(fixed op1) {
+uint64_t fix_convert_to_double_internal(fixed op1) {
   uint8_t isinfpos = FIX_IS_INF_POS(op1);
   uint8_t isinfneg = FIX_IS_INF_NEG(op1);
   uint8_t isnan = FIX_IS_NAN(op1);
@@ -95,6 +92,5 @@ double fix_convert_to_double(fixed op1) {
     (exponent << 52) |
     (mantissa);
 
-  double d = *(double*) &result;
-  return d;
+  return result;
 }
