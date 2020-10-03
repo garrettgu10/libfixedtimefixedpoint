@@ -90,8 +90,14 @@ fixed fix_tan(fixed op1);
  * edges. */
 //fixed fix_sin_fast(fixed op1);
 
+/* Defining these using macros so FTFP can be compiled with no fp */
 fixed  fix_convert_from_double_internal(uint64_t d);
 uint64_t fix_convert_to_double_internal(fixed op1);
+
+#define fix_convert_from_double(d) \
+  fix_convert_from_double_internal((union {double d; uint64_t i;}){ .d = (d) }.i)
+#define fix_convert_to_double(f) \
+  ((union {double d; uint64_t i;}){ .i = fix_convert_to_double_internal(f) }.d)
 
 fixed  fix_convert_from_int64(int64_t i);
 

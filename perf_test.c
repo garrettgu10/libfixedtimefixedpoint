@@ -8,12 +8,16 @@
 
 static inline uint64_t rdtscp(){
   uint64_t v;
+#ifdef __aarch64__
+  __asm__ volatile("mrs %0, pmccntr_el0" : "=r" (v));
+#else //x86_64
   __asm__ volatile("rdtscp;"
                    "shl $32,%%rdx;"
                    "or %%rdx,%%rax;"
                    : "=a" (v)
                    :
                    : "%rcx","%rdx");
+#endif
 
   return v;
 }
