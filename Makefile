@@ -47,7 +47,7 @@ lut.h : generate_base.py
 		$(CC) -c -o $@ $(CFLAGS) -ffreestanding -march=armv8-a+nosimd $<; \
 	fi
 
-libftfp.so: $(ftfp_src) $(dbl_obj) ${ftfp_inc}
+libftfp.so: $(ftfp_obj) $(dbl_obj)
 	$(CC) ${CFLAGS} -march=armv8-a+nosimd -shared -o $@ $+
 
 perf_test: $(perf_ftfp_obj) $(libs)
