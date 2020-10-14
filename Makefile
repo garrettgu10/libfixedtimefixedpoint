@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 OPTFLAGS := -O1 -g -fno-aggressive-loop-optimizations
-CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -fPIC
+CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -fno-stack-protector -fno-plt
 LDFLAGS := -lcmocka -lm -lftfp
 CC := aarch64-linux-gnu-gcc
 
@@ -42,15 +42,18 @@ lut.h : generate_base.py
 
 %.o: %.c ${ftfp_inc} Makefile
 	if [[ "$<" = "test.c" ]]; then \
-		$(CC) -c -o $@ $(CFLAGS) -march=armv8-a+nosimd $<; \
+		$(CC) -c -o $@ $(CFLAGS) -march=armv8-a $<; \
 	else \
-		$(CC) -c -o $@ $(CFLAGS) -march=armv8-a+nosimd+nofp $<; \
+		$(CC) -c -o $@ $(CFLAGS) -ffreestanding -march=armv8-a+nosimd $<; \
 	fi
 
-libftfp.so: $(ftfp_obj) $(dbl_obj)
+libftfp.so: $(ftfp_src) $(dbl_obj) ${ftfp_inc}
 	$(CC) ${CFLAGS} -march=armv8-a+nosimd -shared -o $@ $+
 
 perf_test: $(perf_ftfp_obj) $(libs)
+	$(CC) -lftfp -L . -o $@ $(CFLAGS) $< ${LDFLAGS}
+
+cycle_test: cycle_test.o $(libs)
 	$(CC) -lftfp -L . -o $@ $(CFLAGS) $< ${LDFLAGS}
 
 test: $(test_ftfp_obj) $(libs)

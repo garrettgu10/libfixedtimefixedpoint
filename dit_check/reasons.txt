@@ -1,0 +1,10 @@
+is_dit: the instruction is covered by PSTATE.DIT
+is_ld_st_from_sp: the instruction is a load/store at a constant offset from sp
+is_unconditional_branch: the instruction is an is unconditional branch
+is_adrp: the instruction is an adrp; no input = no input-dependent timing
+is_global_ld_st: the instruction is a load/store from a global address. since this is a two-part operation in arm, this means it is preceeded immediately by an adrp to the src register
+
+manual labels:
+simple for loop: a for loop that goes from a constant start val to a constant end val
+constant address: the address can be directly calculated from the instruction stream
+stack offset: the address comes at a *constant* offset from the sp

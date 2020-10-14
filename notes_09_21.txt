@@ -1,0 +1,17 @@
+
+1. Check stack canary functions, how are these different from unchecked functions
+  fix_print is legitimate, contains large char buffer, fstack-protector-strong triggers when cordic() called with address taken of local var in sin, cos, tan
+2. Refactor double.c?
+  Does this actually help?
+  double *
+3. Make cycle counts work
+  Should be fine, requires very simple kernel module
+  Could perf() work better?
+4. Compare performance with/without fmov + cmge vs cmp (get raspberry pi / packet)
+  performance is comparable, no simd is slightly faster
+  packet doesn't actually have arm machines available
+5. Double check every instance of bad instructions (checklist)
+  done
+
+binary search through fix_pow to find timing variation
+refactor from/to double to double *
