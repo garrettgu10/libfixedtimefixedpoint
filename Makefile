@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-OPTFLAGS := -O1 -g -fno-aggressive-loop-optimizations
+OPTFLAGS := -O1 -g
 CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -fno-stack-protector -fno-plt
 LDFLAGS := -lcmocka -lm -lftfp
 CC := aarch64-linux-gnu-gcc
@@ -47,8 +47,8 @@ lut.h : generate_base.py
 		$(CC) -c -o $@ $(CFLAGS) -ffreestanding -march=armv8-a+nosimd $<; \
 	fi
 
-libftfp.so: $(ftfp_obj) $(dbl_obj)
-	$(CC) ${CFLAGS} -march=armv8-a+nosimd -shared -o $@ $+
+libftfp.so: $(ftfp_inc) $(ftfp_src)
+	$(CC) ${CFLAGS} -march=armv8-a+nosimd -funroll-all-loops -shared -o $@ $(ftfp_src)
 
 perf_test: $(perf_ftfp_obj) $(libs)
 	$(CC) -lftfp -L . -o $@ $(CFLAGS) $< ${LDFLAGS}

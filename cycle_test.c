@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "ftfp.h"
+#include "internal.h"
 
 #define NUM_ITRS 1000
 
@@ -42,13 +43,15 @@ static inline uint64_t rdtscp(){
   end = rdtscp(); \
   result = (end - st - offset);
 
+int use_rand = 1;
 fixed rand_fixed() {
   fixed res = 0;
-  // for(int i = 0; i < 8; i++){
-  //   res |= rand() & 0xff;
-  //   res <<= 8;
-  // }
-  return res;
+  fixed fix = 0;
+  for(int i = 0; i < 8; i++){
+    res |= rand() & 0xff;
+    res <<= 8;
+  }
+  return MASK_UNLESS(use_rand, res) | MASK_UNLESS(!use_rand, fix);
 }
 
 void print_mode(char *name, uint64_t *results, int len) {
@@ -134,7 +137,7 @@ void run_test_db(char* name, int8_t (*function) (fixed,fixed)){
 }
 
 
-int main(int argc, char* argv[]){
+void main(int argc, char* argv[]){
   srand(0);
   printf(    "function ""  cycles\n");
   printf(    "=================\n");
