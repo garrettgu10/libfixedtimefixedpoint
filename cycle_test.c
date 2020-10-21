@@ -6,7 +6,7 @@
 #include "ftfp.h"
 #include "internal.h"
 
-#define NUM_ITRS 1000
+#define NUM_ITRS 2000
 
 static inline uint64_t rdtscp(){
   uint64_t v;
@@ -71,7 +71,14 @@ void print_mode(char *name, uint64_t *results, int len) {
     }
   }
 
-  printf("%s %ld (%.2lf%%)\n", name, max_val, (double)(max_count) / len * 100);
+  uint64_t min = 0xffffffff;
+  uint64_t max = 0;
+  for(int i = 0; i < len; i++) {
+    if(results[i] < min) min = results[i];
+    if(results[i] > max) max = results[i];
+  }
+
+  printf("%s %ld (%ld-%ld, %.2lf%%)\n", name, max_val, min, max, (double)(max_count) / len * 100);
 }
 
 void run_test_d(char* name, fixed (*function) (fixed,fixed)){
@@ -135,7 +142,6 @@ void run_test_db(char* name, int8_t (*function) (fixed,fixed)){
   }
   print_mode(name, results, NUM_ITRS);
 }
-
 
 void main(int argc, char* argv[]){
   srand(0);
