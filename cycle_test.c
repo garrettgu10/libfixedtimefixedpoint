@@ -25,33 +25,64 @@ static inline uint64_t rdtscp(){
 }
 
 #define TEST_INTERNALS( code ) \
-  uint64_t st = rdtscp(); \
-  uint64_t end = rdtscp(); \
-  uint64_t offset = end-st; \
+  uint64_t st; \
+  uint64_t end; \
  \
   st = rdtscp(); \
   code; \
   end = rdtscp(); \
  \
   /* Run everything for real, previous was just warmup */ \
-  st = rdtscp(); \
-  end = rdtscp(); \
-  offset = end-st; \
  \
   st = rdtscp(); \
   code; \
   end = rdtscp(); \
-  result = (end - st - offset);
+  result = (end - st);
+
+#define repeat_1(x) x
+#define repeat_2(x) repeat_1(x) repeat_1(x)
+#define repeat_4(x) repeat_2(x) repeat_2(x)
+#define repeat_8(x) repeat_4(x) repeat_4(x)
+#define repeat_16(x) repeat_8(x) repeat_8(x)
+#define repeat_32(x) repeat_16(x) repeat_16(x)
+#define repeat_64(x) repeat_32(x) repeat_32(x)
 
 int use_rand = 1;
 fixed rand_fixed() {
   fixed res = 0;
   fixed fix = 0;
-  for(int i = 0; i < 8; i++){
+  repeat_8({
     res |= rand() & 0xff;
     res <<= 8;
-  }
+  });
   return MASK_UNLESS(use_rand, res) | MASK_UNLESS(!use_rand, fix);
+}
+
+void print_distribution(uint64_t *results, int len) {
+  uint64_t next_min = 0;
+  while(1) {
+    uint64_t min = 0xffffffff;
+    for(int i = 0; i < len; i++){
+      if(results[i] > next_min && results[i] < min) {
+        min = results[i];
+      }
+    }
+
+    if(min == 0xffffffff) {
+      break;
+    }
+
+    int count = 0;
+    for(int i = 0; i < len; i++) {
+      if(results[i] == min) {
+        count++;
+      }
+    }
+
+    printf("%ld\t(%.2lf)\n", min, (double)(count) / len * 100);
+
+    next_min = min;
+  }
 }
 
 void print_mode(char *name, uint64_t *results, int len) {
@@ -79,6 +110,7 @@ void print_mode(char *name, uint64_t *results, int len) {
   }
 
   printf("%s %ld (%ld-%ld, %.2lf%%)\n", name, max_val, min, max, (double)(max_count) / len * 100);
+  //print_distribution(results, len);
 }
 
 void run_test_d(char* name, fixed (*function) (fixed,fixed)){
@@ -153,7 +185,9 @@ void main(int argc, char* argv[]){
   run_test_sb("fix_is_nan     ",fix_is_nan);
   run_test_sb("fix_is_inf_pos ",fix_is_nan);
   run_test_sb("fix_is_inf_neg ",fix_is_nan);
+  
   run_test_db("fix_eq         ",fix_eq);
+  
   run_test_db("fix_eq_nan     ",fix_eq_nan);
   run_test_db("fix_cmp        ",fix_cmp);
 
@@ -186,4 +220,5 @@ void main(int argc, char* argv[]){
   printf("\n");
 
   run_test_p ("fix_sprint      ",fix_sprint);
+  
 }
