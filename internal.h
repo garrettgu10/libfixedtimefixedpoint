@@ -505,7 +505,6 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
   uint64_t base = big_qtau;
 
   uint64_t result = 0;
-  int i = 0;
 
   /* if absx is 0x80..0, then x was the largest negative number, and acc is
    * some nonsense. Fix that up... */
@@ -513,7 +512,7 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
         MASK_UNLESS_64( absx != 0x8000000000000000, acc );
 
   // Now, perform long division: x / y
-  for(i = 63; i >= 0; i--) {
+  REPEAT_64({
 
     // Pesudocode:
     //if((acc >= base) & (base != 0)) {
@@ -528,7 +527,7 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
 
     result = result << 1;
     base = base >> 1;
-  }
+  })
   // result now has 64 bits of division result; we need to shift it into place
   // "Place" is a combination of FIX_POINT_BITS and 'shift', as computed above
   // Since we moved y to be slightly above x, result contains a number in Q64.
@@ -546,7 +545,7 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
 
 
 
-static inline uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
+FIX_INLINE uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
   uint8_t xpos =  !FIX_TOP_BIT(x);
   uint8_t ypos =  !FIX_TOP_BIT(y);
 
@@ -570,10 +569,9 @@ static inline uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
    * some nonsense. Fix that up... */
   acc = MASK_UNLESS_64( absx == 0x8000000000000000, absx >> 1 ) |
         MASK_UNLESS_64( absx != 0x8000000000000000, acc );
-  int i = 0;
 
   // Now, perform long division: x / y
-  for(i = 63; i >= 0; i--) {
+  REPEAT_64({
 
     // Pesudocode:
     //if((acc >= base) & (base != 0)) {
@@ -588,7 +586,7 @@ static inline uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
 
     result = result << 1;
     base = base >> 1;
-  }
+  });
 
   // result now has 64 bits of division result; we need to shift it into place
   // "Place" is a combination of FIX_POINT_BITS and 'shift', as computed above
