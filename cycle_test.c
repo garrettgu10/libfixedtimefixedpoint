@@ -6,7 +6,7 @@
 #include "ftfp.h"
 #include "internal.h"
 
-#define NUM_ITRS 2000
+#define NUM_ITRS 4000
 
 static inline uint64_t rdtscp(){
   uint64_t v;

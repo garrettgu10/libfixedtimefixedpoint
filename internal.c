@@ -55,16 +55,20 @@ uint64_t fixfrac(char* frac) {
     uint64_t result = 0;
     uint64_t extra = 0;
 
-    for(int i = 0; i < 20; i++) {
+    int i = 0;
+    REPEAT_20({
         if(frac[i] == '\0') {
-            break;
+            goto done;
         }
 
         uint8_t digit = (frac[i] - (uint8_t) '0');
 
         result += ((uint64_t) digit) * pow10_LUT[i];
         extra  += ((uint64_t) digit) * pow10_LUT_extra[i];
-    }
+        i++;
+    })
+
+    done:
 
     // We're going to round result to even, using extra as the lower bits.
     // First, add the bits from extra that have wrapped over, and then reproduce

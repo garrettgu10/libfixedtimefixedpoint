@@ -31,7 +31,10 @@ FIX_INLINE void cordic(fix_internal* Zext, fix_internal* Cext, fix_internal* Sex
 
   uint8_t overflow = 0;
 
-  for(int m = 0; m < CORDIC_N; m++) {
+  #define REPEAT_CORDIC_N REPEAT_N(CORDIC_N)
+
+  int m = 0;
+  REPEAT_CORDIC_N({
     pow2 = ((fix_internal) 2) << (FIX_INTERN_FRAC_BITS - 1 - m);
 
     /* generate the m+1th values of Z, C, S, and D */
@@ -43,7 +46,8 @@ FIX_INLINE void cordic(fix_internal* Zext, fix_internal* Cext, fix_internal* Sex
     C = C_;
     S = S_;
     D = SIGN_EX_SHIFT_RIGHT(Z, (FIX_INTERN_FRAC_BITS + FIX_INTERN_INT_BITS -1)) | 1;
-  }
+    m++;
+  });
 
   *Zext = Z;
   *Cext = C;

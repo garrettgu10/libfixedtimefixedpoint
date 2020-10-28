@@ -77,7 +77,7 @@ fixed fix_exp(fixed op1) {
    * guaranteed bit-accurate taylor series approximation (at least in a fix_internal).
    */
 
-#define FIX_EXP_LOOP 25
+#define FIX_EXP_LOOP 24
 
   /* To generate the table of fractional bits vs. loop iterations:
    *
@@ -94,12 +94,16 @@ fixed fix_exp(fixed op1) {
   fix_internal term = 1ull << FIX_INTERN_FRAC_BITS;
   uint8_t overflow = 0;
 
-  for(int i = 1; i < FIX_EXP_LOOP; i ++) {
+  #define REPEAT_FIX_EXP_LOOP REPEAT_N(FIX_EXP_LOOP)
+
+  int i = 1;
+  REPEAT_FIX_EXP_LOOP({
     term = FIX_MUL_INTERN(term, scratch, overflow);
     term = FIX_MUL_INTERN(term, LUT_int_inv_integer[i], overflow);
 
     e_x += term;
-  }
+    i++;
+  })
 
   isinfpos |= overflow;
 
@@ -204,8 +208,9 @@ fixed fix_exp(fixed op1) {
 
   fix_internal r2shift = 0;
 
-  for(int i = 0; i < FIX_SQUARE_LOOP; i++) {
+  #define REPEAT_FIX_SQUARE_LOOP(x) REPEAT_N(FIX_SQUARE_LOOP)
 
+  REPEAT_FIX_SQUARE_LOOP(x)({
     r2shift = MUL_64_TOP(rshift, rshift);
 
     // r2shift will represent a number between [0.25, 1) in 0.64 fixed. Therefore, it _might_
@@ -217,7 +222,7 @@ fixed fix_exp(fixed op1) {
     rint_bits = rint_bits + MASK_UNLESS(squarings > 0, rint_bits - !FIX_TOP_BIT(r2shift));
 
     squarings = MASK_UNLESS(squarings > 0, squarings-1);
-  }
+  })
 
   // If this is positive, we've overflowed the 64-bit range.
   // If this is zero, we've overflowed the sign bit.
@@ -524,7 +529,7 @@ fixed fix_sqrt(fixed op1) {
 
   uint8_t overflow = 0;
 
-  for(int i = 0; i < 22; i++) {
+  REPEAT_22({
     // Compute x/2
     fixed x2 = ROUND_TO_EVEN_ONE_BIT(x);
 
@@ -533,7 +538,7 @@ fixed fix_sqrt(fixed op1) {
     fixed op1x2 = ROUND_TO_EVEN_ONE_BIT(op1x);
 
     x = x - x2 + op1x2;
-  }
+  })
 
 #if FIX_INT_BITS > 1
   // Get rid of spare bits.
@@ -623,7 +628,7 @@ fixed fix_pow(fixed x, fixed y) {
   uint8_t yneg = FIX_IS_NEG(y);
 
   fixed one = FIXINT(1);
-  fixed neg_one = FIXNUM(-1,0);
+  fixed neg_one = ((1l << FIX_INT_BITS) - 1) << (64 - FIX_INT_BITS);
 
 #if FIX_INT_BITS == 1
   fixed xorig = x;
