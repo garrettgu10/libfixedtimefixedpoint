@@ -1,10 +1,10 @@
-#include "ftfp.h"
+#include "ftfp_inline.h"
 #include "internal.h"
 #include "lut.h"
 
 // Contains the logarithmic, exponential, and square root functions for libftfp.
 
-fixed fix_exp(fixed op1) {
+FIX_INLINE fixed fix_exp_i(fixed op1) {
 
   uint8_t isinfpos = FIX_IS_INF_POS(op1);
   uint8_t isinfneg = FIX_IS_INF_NEG(op1);
@@ -240,6 +240,10 @@ fixed fix_exp(fixed op1) {
     MASK_UNLESS(!isinfneg, FIX_DATA_BITS(final_result));
 }
 
+fixed fix_exp(fixed op1) {
+  return fix_exp_i(op1);
+}
+
   // We don't want to use a inline function here to avoid pointers
   // compute (int) log2(op1)  (as a uint32_t, not fixed)
 
@@ -265,7 +269,7 @@ fixed fix_exp(fixed op1) {
     MASK_UNLESS(log2 >  FIX_INTERN_FRAC_BITS, op1 >> (log2 - FIX_INTERN_FRAC_BITS)); \
   m -= (((fix_internal) 1) << FIX_INTERN_FRAC_BITS);
 
-fixed fix_ln(fixed op1) {
+FIX_INLINE fixed fix_ln_i(fixed op1) {
   /* Approach taken from http://eesite.bitbucket.org/html/software/log_app/log_app.html */
 
   uint8_t isinfpos = FIX_IS_INF_POS(op1);
@@ -344,6 +348,9 @@ fixed fix_ln(fixed op1) {
     FIX_DATA_BITS(r);
 }
 
+fixed fix_ln(fixed op1) {
+  return fix_ln_i(op1);
+}
 
 fixed fix_log2(fixed op1) {
   /* Approach taken from http://eesite.bitbucket.org/html/software/log_app/log_app.html */
@@ -632,25 +639,25 @@ fixed fix_pow(fixed x, fixed y) {
 
 #if FIX_INT_BITS == 1
   fixed xorig = x;
-  x = fix_abs(x);
+  x = fix_abs_i(x);
   uint8_t xmagone  = (xorig == FIX_MIN);
   uint8_t xmagonel = (xorig != FIX_MIN);
   uint8_t xmagoneg = 0;
 #else
-  x = fix_abs(x);
-  uint8_t xmagone  = fix_eq(x, one);
-  uint8_t xmagonel = fix_lt(x, one);
-  uint8_t xmagoneg = fix_gt(x, one);
+  x = fix_abs_i(x);
+  uint8_t xmagone  = fix_eq_i(x, one);
+  uint8_t xmagonel = fix_lt_i(x, one);
+  uint8_t xmagoneg = fix_gt_i(x, one);
 #endif
 
   // To know if y is an integer, we need it to be positive.
-  fixed yabs = fix_abs(y);
+  fixed yabs = fix_abs_i(y);
   uint8_t y_is_int = (yabs & FIX_FRAC_MASK) == 0;
   uint8_t y_int_mod_2 = ((yabs & FIX_INT_MASK) >> FIX_POINT_BITS) & 0x1;
 
-  fixed lnx = fix_ln(x);
-  fixed prod = fix_mul(lnx, y);
-  fixed result = fix_exp(prod);
+  fixed lnx = fix_ln_i(x);
+  fixed prod = fix_mul_i(lnx, y);
+  fixed result = fix_exp_i(prod);
 
   uint8_t isinfpos = 0;
   uint8_t isinfneg = 0;
@@ -764,5 +771,5 @@ fixed fix_pow(fixed x, fixed y) {
       MASK_UNLESS( (!isnan) & iszero, FIX_ZERO) |  /* no-op, but it keeps the compiler happy */
       MASK_UNLESS( (!isnan) & isnegone, neg_one) |
       MASK_UNLESS( (!excep) & isresult & (!invert_result), result) |
-      MASK_UNLESS( (!excep) & isresult & ( invert_result), fix_neg(result)));
+      MASK_UNLESS( (!excep) & isresult & ( invert_result), fix_neg_i(result)));
 }

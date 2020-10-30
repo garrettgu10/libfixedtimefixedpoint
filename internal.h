@@ -12,7 +12,7 @@
 //#define DEBUG
 
 
-#define FIX_INLINE static inline
+#define FIX_INLINE static __attribute__((always_inline))
 
 fixed fix_neg(fixed op1);
 
@@ -454,17 +454,32 @@ void fix_allfrac_print(char* buffer, fix_internal f);
 // functions that should be inlined
 ///////////////////////////////////////
 
-// Costs about 20 cycles
 FIX_INLINE uint8_t uint64_log2(uint64_t o) {
   uint64_t scratch = o;
   uint64_t log2;
   uint64_t shift;
 
-  log2 =  (scratch > 0xFFFFFFFF) << 5; scratch >>= log2;
-  shift = (scratch > 0xFFFF)     << 4; scratch >>= shift; log2 |= shift;
-  shift = (scratch >   0xFF)     << 3; scratch >>= shift; log2 |= shift;
-  shift = (scratch >    0xF)     << 2; scratch >>= shift; log2 |= shift;
-  shift = (scratch >    0x3)     << 1; scratch >>= shift; log2 |= shift;
+  uint64_t cmp = 0xFFFFFFFF;
+
+  log2 =  (scratch > cmp) << 5; 
+  scratch >>= log2;
+  cmp >>= 16;
+  shift = (scratch > cmp)     << 4; 
+  scratch >>= shift; 
+  log2 |= shift;
+  cmp >>= 8;
+  shift = (scratch > cmp)     << 3; 
+  scratch >>= shift; 
+  log2 |= shift;
+  cmp >>= 4;
+  shift = (scratch > cmp)     << 2; 
+  scratch >>= shift; 
+  log2 |= shift;
+  cmp >>= 2;
+  shift = (scratch > cmp)     << 1; 
+  scratch >>= shift; 
+  log2 |= shift;
+  cmp >>= 1;
   log2 |= (scratch >> 1);
   return log2;
 }
@@ -543,7 +558,24 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
   return result;
 }
 
+FIX_INLINE fixed fix_neg_inline(fixed op1){
+  // Flip our infs
+  // NaN is still NaN
+  // Because we're two's complement, FIX_MIN has no inverse. Make it positive
+  // infinity...
+  uint8_t isinfpos = FIX_IS_INF_NEG(op1) | (op1 == FIX_MIN);
+  uint8_t isinfneg = FIX_IS_INF_POS(op1);
+  uint8_t isnan = FIX_IS_NAN(op1);
 
+  // 2s comp negate the data bits
+  fixed tempresult = FIX_DATA_BITS(((~op1) + 4));
+
+  // Combine
+  return FIX_IF_NAN(isnan) |
+    FIX_IF_INF_POS(isinfpos & (!isnan)) |
+    FIX_IF_INF_NEG(isinfneg & (!isnan)) |
+    FIX_DATA_BITS(tempresult);
+}
 
 FIX_INLINE uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
   uint8_t xpos =  !FIX_TOP_BIT(x);
@@ -605,9 +637,8 @@ FIX_INLINE uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
   result = FIX_DATA_BITS_ROUNDED(result);
 
   result = MASK_UNLESS(ypos == xpos, result) |
-           MASK_UNLESS(ypos != xpos, fix_neg(result));
+           MASK_UNLESS(ypos != xpos, fix_neg_inline(result));
 
-  return FIX_DATA_BITS(result);
 }
 
 #define fix_div_var fix_div_64
