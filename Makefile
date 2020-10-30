@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 OPTFLAGS := -O1 -g
-CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -fno-stack-protector -fno-plt
+CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Wno-unused-function -Wno-strict-aliasing -fno-stack-protector
 LDFLAGS := -lcmocka -lm -lftfp
 CC := aarch64-linux-gnu-gcc
 
@@ -9,7 +9,7 @@ LD_LIBRARY_PATH=.
 progs             := test perf_test generate_test_helper
 libs              := libftfp.so
 ftfp_src          := ftfp.c autogen.c internal.c cordic.c power.c debug.c double.c
-ftfp_inc          := ftfp.h internal.h base.h lut.h
+ftfp_inc          := ftfp.h internal.h base.h lut.h cordic.h
 ftfp_obj          := $(ftfp_src:.c=.o)
 ftfp_pre          := $(ftfp_src:.c=.pre)
 
@@ -98,3 +98,7 @@ run_generate_test_helper:
 run_cycle_test: cycle_test libftfp.so
 	scp cycle_test libftfp.so ubuntu@192.168.1.3:~
 	ssh ubuntu@192.168.1.3 "LD_LIBRARY_PATH=. ./cycle_test";
+
+run_dut_libftfp: libftfp.so
+	scp libftfp.so ubuntu@192.168.1.3:~
+	(cd dudect-arm; make run_dut_libftfp;)
