@@ -79,26 +79,6 @@ FIX_INLINE uint8_t fix_gt_i(fixed op1, fixed op2) {
   return MASK_UNLESS(!nans, result > 0);
 }
 
-
-FIX_INLINE fixed fix_neg_i(fixed op1){
-  // Flip our infs
-  // NaN is still NaN
-  // Because we're two's complement, FIX_MIN has no inverse. Make it positive
-  // infinity...
-  uint8_t isinfpos = FIX_IS_INF_NEG(op1) | (op1 == FIX_MIN);
-  uint8_t isinfneg = FIX_IS_INF_POS(op1);
-  uint8_t isnan = FIX_IS_NAN(op1);
-
-  // 2s comp negate the data bits
-  fixed tempresult = FIX_DATA_BITS(((~op1) + 4));
-
-  // Combine
-  return FIX_IF_NAN(isnan) |
-    FIX_IF_INF_POS(isinfpos & (!isnan)) |
-    FIX_IF_INF_NEG(isinfneg & (!isnan)) |
-    FIX_DATA_BITS(tempresult);
-}
-
 FIX_INLINE fixed fix_abs_i(fixed op1){
   uint8_t isinfpos = FIX_IS_INF_POS(op1);
   uint8_t isinfneg = FIX_IS_INF_NEG(op1);

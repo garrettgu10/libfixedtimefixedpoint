@@ -459,27 +459,11 @@ FIX_INLINE uint8_t uint64_log2(uint64_t o) {
   uint64_t log2;
   uint64_t shift;
 
-  uint64_t cmp = 0xFFFFFFFF;
-
-  log2 =  (scratch > cmp) << 5; 
-  scratch >>= log2;
-  cmp >>= 16;
-  shift = (scratch > cmp)     << 4; 
-  scratch >>= shift; 
-  log2 |= shift;
-  cmp >>= 8;
-  shift = (scratch > cmp)     << 3; 
-  scratch >>= shift; 
-  log2 |= shift;
-  cmp >>= 4;
-  shift = (scratch > cmp)     << 2; 
-  scratch >>= shift; 
-  log2 |= shift;
-  cmp >>= 2;
-  shift = (scratch > cmp)     << 1; 
-  scratch >>= shift; 
-  log2 |= shift;
-  cmp >>= 1;
+  log2 =  (scratch > 0xFFFFFFFF) << 5; scratch >>= log2;
+  shift = (scratch > 0xFFFF)     << 4; scratch >>= shift; log2 |= shift;
+  shift = (scratch >   0xFF)     << 3; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0xF)     << 2; scratch >>= shift; log2 |= shift;
+  shift = (scratch >    0x3)     << 1; scratch >>= shift; log2 |= shift;
   log2 |= (scratch >> 1);
   return log2;
 }
@@ -558,7 +542,7 @@ FIX_INLINE fix_internal fix_circle_frac(fixed op1) {
   return result;
 }
 
-FIX_INLINE fixed fix_neg_inline(fixed op1){
+FIX_INLINE fixed fix_neg_i(fixed op1){
   // Flip our infs
   // NaN is still NaN
   // Because we're two's complement, FIX_MIN has no inverse. Make it positive
@@ -637,8 +621,9 @@ FIX_INLINE uint64_t fix_div_64(fixed x, fixed y, uint8_t* overflow) {
   result = FIX_DATA_BITS_ROUNDED(result);
 
   result = MASK_UNLESS(ypos == xpos, result) |
-           MASK_UNLESS(ypos != xpos, fix_neg_inline(result));
+           MASK_UNLESS(ypos != xpos, fix_neg_i(result));
 
+  return FIX_DATA_BITS(result);
 }
 
 #define fix_div_var fix_div_64
