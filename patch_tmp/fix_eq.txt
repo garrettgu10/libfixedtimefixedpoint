@@ -1,0 +1,37 @@
+and x4, x0, 3      ; arg5
+and x3, x1, 3      ; arg4
+cmp x4, 2          ; arg5
+ccmp x3, 2, 0, eq  ; ftfp_inline.h:34   uint32_t lt = ((!FIX_IS_INF_POS(op1)) &   FIX_IS_INF_POS(op2)) | ; arg4
+cset w2, eq        ; ftfp_inline.h:33                 ((!FIX_IS_INF_NEG(op1)) &   FIX_IS_INF_NEG(op2));
+cmp x4, 3          ; arg5
+ccmp x3, 3, 0, eq  ; arg4
+csinc w5, w2, wzr, ne
+cmp x0, x1         ; ftfp_inline.h:45     MASK_UNLESS( !nans, ; arg2
+csinc w0, w5, wzr, ne
+cmp x4, 1          ; arg5
+ccmp x3, 1, 4, ne  ; arg4
+csel w0, w0, wzr, ne ; ftfp.c:34 uint8_t fix_le(fixed op1, fixed op2) {
+ret
+
+and x4, x0, 3      ; arg5
+and x3, x1, 3      ; arg4
+;cmp x4, 2          ; arg5
+    sub x6, x4, 2
+;ccmp x3, 2, 0, eq  ; ftfp_inline.h:34   uint32_t lt = ((!FIX_IS_INF_POS(op1)) &   FIX_IS_INF_POS(op2)) | ; arg4
+    sub x7, x3, 2
+    orr x6, x6, x7
+    cmp x6, 0
+cset w2, eq        ; ftfp_inline.h:33                 ((!FIX_IS_INF_NEG(op1)) &   FIX_IS_INF_NEG(op2));
+;cmp x4, 3          ; arg5
+    sub x6, x4, 3
+;ccmp x3, 3, 0, eq  ; arg4
+    sub x7, x3, 3
+    orr x6, x6, x7
+    cmp x6, 0
+csinc w5, w2, wzr, ne
+cmp x0, x1         ; ftfp_inline.h:45     MASK_UNLESS( !nans, ; arg2
+csinc w0, w5, wzr, ne
+cmp x4, 1          ; arg5
+ccmp x3, 1, 4, ne  ; arg4
+csel w0, w0, wzr, ne ; ftfp.c:34 uint8_t fix_le(fixed op1, fixed op2) {
+ret

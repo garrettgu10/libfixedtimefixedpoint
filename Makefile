@@ -4,6 +4,8 @@ CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-al
 LDFLAGS := -lcmocka -lm -lftfp
 CC := aarch64-linux-gnu-gcc
 
+REMOTE_IP=192.168.1.3
+
 LD_LIBRARY_PATH=.
 
 progs             := test perf_test generate_test_helper
@@ -94,3 +96,7 @@ run_generate_test_helper:
 	done ; \
 	echo >> test_helper.h ; \
 	echo "#endif" >> test_helper.h ;
+
+run_cycle_test: cycle_test libftfp.so
+	scp cycle_test libftfp.so ubuntu@$(REMOTE_IP):~
+	ssh ubuntu@$(REMOTE_IP) "LD_LIBRARY_PATH=. ./cycle_test";

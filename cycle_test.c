@@ -147,13 +147,15 @@ void main(int argc, char* argv[]){
   srand(0);
   printf(    "function ""  cycles\n");
   printf(    "=================\n");
-  run_test_s ("fix_neg        ",fix_neg);
+/*  run_test_s ("fix_neg        ",fix_neg);
   run_test_s ("fix_abs        ",fix_abs);
   run_test_sb("fix_is_neg     ",fix_is_neg);
   run_test_sb("fix_is_nan     ",fix_is_nan);
   run_test_sb("fix_is_inf_pos ",fix_is_nan);
   run_test_sb("fix_is_inf_neg ",fix_is_nan);
+  */
   run_test_db("fix_eq         ",fix_eq);
+  /*
   run_test_db("fix_eq_nan     ",fix_eq_nan);
   run_test_db("fix_cmp        ",fix_cmp);
 
@@ -186,4 +188,5 @@ void main(int argc, char* argv[]){
   printf("\n");
 
   run_test_p ("fix_sprint      ",fix_sprint);
+  */
 }
