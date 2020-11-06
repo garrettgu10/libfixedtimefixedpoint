@@ -5,6 +5,7 @@ LDFLAGS := -lcmocka -lm -lftfp
 CC := aarch64-linux-gnu-gcc
 
 LD_LIBRARY_PATH=.
+REMOTE_IP?=192.168.1.3
 
 progs             := test perf_test generate_test_helper
 libs              := libftfp.so
@@ -96,9 +97,9 @@ run_generate_test_helper:
 	echo "#endif" >> test_helper.h ;
 
 run_cycle_test: cycle_test libftfp.so
-	scp cycle_test libftfp.so ubuntu@192.168.1.3:~
-	ssh ubuntu@192.168.1.3 "LD_LIBRARY_PATH=. ./cycle_test";
+	scp cycle_test libftfp.so ubuntu@$(REMOTE_IP):~
+	ssh ubuntu@$(REMOTE_IP) "LD_LIBRARY_PATH=. ./cycle_test";
 
 run_dut_libftfp: libftfp.so
-	scp libftfp.so ubuntu@192.168.1.3:~
-	(cd dudect-arm; make run_dut_libftfp;)
+	scp libftfp.so ubuntu@$(REMOTE_IP):~
+	(export REMOTE_IP=$(REMOTE_IP); cd dudect-arm; make run_dut_libftfp;)
