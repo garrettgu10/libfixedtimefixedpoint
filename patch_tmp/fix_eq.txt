@@ -31,7 +31,11 @@ cset w2, eq        ; ftfp_inline.h:33                 ((!FIX_IS_INF_NEG(op1)) & 
 csinc w5, w2, wzr, ne
 cmp x0, x1         ; ftfp_inline.h:45     MASK_UNLESS( !nans, ; arg2
 csinc w0, w5, wzr, ne
-cmp x4, 1          ; arg5
-ccmp x3, 1, 4, ne  ; arg4
+;cmp x4, 1          ; arg5
+    sub x6, x4, 1
+;ccmp x3, 1, 4, ne  ; arg4
+    sub x7, x3, 1
+    and x6, x6, x7
+    cmp x6, 0
 csel w0, w0, wzr, ne ; ftfp.c:34 uint8_t fix_le(fixed op1, fixed op2) {
 ret
