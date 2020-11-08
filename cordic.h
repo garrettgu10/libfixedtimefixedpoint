@@ -38,10 +38,10 @@ FIX_INLINE void cordic(fix_internal* Zext, fix_internal* Cext, fix_internal* Sex
     pow2 = ((fix_internal) 2) << (FIX_INTERN_FRAC_BITS - 1 - m);
 
     /* generate the m+1th values of Z, C, S, and D */
-    Z = Z - D * cordic_lut[m];
+    Z = Z - MUL_64_ALL(D, cordic_lut[m], overflow);
 
-    C_ = C - D*FIX_MUL_INTERN(pow2, S, overflow);
-    S_ = S + D*FIX_MUL_INTERN(pow2, C, overflow);
+    C_ = C - MUL_64_ALL(D, FIX_MUL_INTERN(pow2, S, overflow), overflow);
+    S_ = S + MUL_64_ALL(D, FIX_MUL_INTERN(pow2, C, overflow), overflow);
 
     C = C_;
     S = S_;
