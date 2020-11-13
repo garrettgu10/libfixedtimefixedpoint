@@ -1,0 +1,10 @@
+Expected values if there is timing variability: 0.5, 0.5, 0.5, 1, 0, 1, 0, 1, 0
+Control group 1: 0.524 success rate
+Control group 2: 0.514 success rate
+Control group 3: 0.515 success rate
+Test group 1: 0.992 success rate
+Test group 2: 0.005 success rate
+Test group 3: 0.990 success rate
+Test group 4: 0.012 success rate
+Test group 5: 1.000 success rate
+Test group 6: 0.001 success rate

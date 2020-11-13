@@ -10,3 +10,4 @@ base.py
 *.asm
 *.so
 perf_test
+mul_check/amplified

@@ -15,7 +15,7 @@ def is_dit(instruction, _):
     return True
 
 #checks if an instruction is a load/store from a static offset from the stack pointer
-#these are never secret-dependent
+#these are never secret-dependent since the stack pointer is never moved to a secret-dependent location
 def is_ld_st_from_sp(instruction, _):
     mnemonic = instruction.mnemonic
     if(mnemonic not in ["ldp", "ldr", "stp", "str", "strb", "ldrb"]):
@@ -32,10 +32,6 @@ def is_ld_st_from_sp(instruction, _):
     
     return False
 
-#checks if an instruction is an unconditional branch
-def is_unconditional_branch(instruction, _):
-    return instruction.mnemonic == "bl" and re.search("^#0x[0-9a-f]+$", instruction.op_str)
-
 #checks if an instruction is an ADRP
 #since this is essentially a load immediate for an address, this is not secret-dependent
 def is_adrp(instruction, _):
@@ -43,6 +39,7 @@ def is_adrp(instruction, _):
 
 #checks if an instruction is a global load or store
 #this is defined by a load or store to/from a location relative to a register immediately following an adrp
+#we know this is a load at a fixed offset because we have eliminated function calls
 def is_global_ld_st(instruction, instructions):
     if(instruction.mnemonic not in ["ldp", "ldr", "stp", "str", "strb", "ldrb"]):
         return False
@@ -59,7 +56,7 @@ def is_global_ld_st(instruction, instructions):
         return True
     return False
 
-FILTERS = [is_dit, is_ld_st_from_sp, is_unconditional_branch, is_adrp, is_global_ld_st]
+FILTERS = [is_dit, is_ld_st_from_sp, is_adrp, is_global_ld_st]
 def any_filter(instruction, instructions):
     for filter in FILTERS:
         if(filter(instruction, instructions)):

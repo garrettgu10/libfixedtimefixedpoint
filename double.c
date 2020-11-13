@@ -1,5 +1,6 @@
 
 #include "ftfp.h"
+#include "ftfp_inline.h"
 #include "internal.h"
 #include <math.h>
 #include <stdint.h>
@@ -44,7 +45,7 @@ fixed fix_convert_from_double_internal(uint64_t d) {
   uint8_t isinfneg = (sign != 0) & isinf;
   uint8_t isnan = (exponent_base == 0x7ff) && (mantissa_base != 0);
 
-  fixed result_neg = fix_neg(result);
+  fixed result_neg = fix_neg_i(result);
 
   return
     FIX_IF_NAN(isnan) |
@@ -62,7 +63,7 @@ uint64_t fix_convert_to_double_internal(fixed op1) {
 
   // Doubles don't use two's complement. Record the sign and flip back into positive land...
   uint64_t sign = FIX_IS_NEG(op1);
-  op1 = fix_abs(op1);
+  op1 = fix_abs_i(op1);
 
   uint32_t log2op1 = uint64_log2(op1);
 

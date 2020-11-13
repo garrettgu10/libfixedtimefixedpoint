@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 OPTFLAGS := -O1 -g
-CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Wno-unused-function -Wno-strict-aliasing -fno-stack-protector
+CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Wno-unused-function -Wno-strict-aliasing -Wno-attributes -fno-stack-protector
 LDFLAGS := -lcmocka -lm -lftfp
 CC := aarch64-linux-gnu-gcc
 
@@ -75,6 +75,13 @@ run_tests:
 	set -x ; \
 	number=1 ; while [[ $$number -le 61  ]] ; do \
 		echo "Testing" $$number "int bits..." && make clean && python -B generate_base.py --file base.h --pyfile base.py --intbits $$number && make test && LD_LIBRARY_PATH=. QEMU_LD_PREFIX=/usr/aarch64-linux-gnu qemu-aarch64 ./test || exit 1; \
+		((number = number + 1)) ; \
+	done
+
+run_dit_check:
+	set -x ; \
+	number=1 ; while [[ $$number -le 61  ]] ; do \
+		echo "Testing" $$number "int bits..." && make clean && python -B generate_base.py --file base.h --pyfile base.py --intbits $$number && make libftfp.so && (cd dit_check; python3 dit_check.py ../libftfp.so) || exit 1; \
 		((number = number + 1)) ; \
 	done
 
