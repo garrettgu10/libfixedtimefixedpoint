@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 OPTFLAGS := -O1 -g
-CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -fno-stack-protector -fno-plt
+CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Werror -Wno-unused-function -Wno-strict-aliasing -Wno-attributes -fno-stack-protector -fno-plt
 LDFLAGS := -lcmocka -lm -lftfp
 CC := aarch64-linux-gnu-gcc
 
