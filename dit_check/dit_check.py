@@ -7,8 +7,8 @@ from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import SymbolTableSection
 from capstone import *
 
+#note fix_sprint is a special case since it performs input-dependent loads by design
 EXCLUDED_FUNCS = [
-    'fix_sprint', #timing is not independent from inputs since "buffer" is an input
     'fix_print', #calls libc function, info leakage is inevitable
     'fix_println' #ditto
 ]
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     bad_instrs = [str(i) for i in instructions if not any_filter(i, instructions)]
 
     if(len(bad_instrs) != 0):
-        print(bad_instrs)
+        print("found non-dit instructions", bad_instrs)
         exit(1)
 
-    print("check was successful, these functions are DIT")
+    print("\033[92mcheck was successful, these functions are DIT\033[0m")
