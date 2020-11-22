@@ -74,14 +74,8 @@ typedef int64_t fixed_signed;
 #define FIX_IS_INF_NEG(f) (((f)&0x1) & (((f) >> 1)&0x1))
 
 //sets the bottom bit if all bits are one
-static __attribute__((always_inline)) uint8_t all_one(uint64_t op) {
-  op = (op >> 32) & (op & 0xffffffff);
-  op = (op >> 16) & (op & 0xffff);
-  op = (op >> 8) & (op & 0xff);
-  op = (op >> 4) & (op & 0xf);
-  op = (op >> 2) & (op & 0x3);
-  op = (op >> 1) & (op & 0x1);
-  return op;
+static __attribute__((always_inline)) uint8_t all_zero(uint64_t op) {
+  return ((op >> 63) | ((-op) >> 63)) ^ 1;
 }
 
 /* Returns true if the numbers are equal (NaNs are always unequal.) */
@@ -89,7 +83,7 @@ static __attribute__((always_inline)) uint8_t all_one(uint64_t op) {
     ((~(FIX_IS_NAN(op1) | FIX_IS_NAN(op2)))&0x1) &    \
     ((FIX_IS_INF_POS(op1) & FIX_IS_INF_POS(op2)) | \
     (FIX_IS_INF_NEG(op1) & FIX_IS_INF_NEG(op2)) | \
-    all_one(~((op1) ^ (op2)))))
+    all_zero((op1) ^ (op2))))
 
 /* Returns true if the numbers are equal (and also if they are both NaN) */
 #define FIX_EQ_NAN(op1, op2) ( \
