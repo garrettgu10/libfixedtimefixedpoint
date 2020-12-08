@@ -20,7 +20,7 @@ static inline uint64_t rdtscp(){
   return v;
 }
 
-#define NUM_TESTS 100000
+#define NUM_TESTS 10000
 uint64_t counts[NUM_TESTS];
 uint64_t operands[NUM_TESTS];
 uint64_t results[NUM_TESTS];

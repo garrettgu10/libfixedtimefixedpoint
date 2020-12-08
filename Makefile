@@ -1,11 +1,11 @@
 SHELL := /bin/bash
 OPTFLAGS := -O1 -g
-CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Wno-unused-function -Wno-strict-aliasing -Wno-attributes -fno-stack-protector
+CFLAGS := $(OPTFLAGS) -std=c99 -Wall -Wno-unused-function -Wno-strict-aliasing -Wno-attributes
 LDFLAGS := -lcmocka -lm -lftfp
 CC := aarch64-linux-gnu-gcc
 
 LD_LIBRARY_PATH=.
-REMOTE_IP?=192.168.1.3
+REMOTE_IP?=192.168.1.161
 
 progs             := test perf_test generate_test_helper
 libs              := libftfp.so
@@ -55,7 +55,10 @@ perf_test: $(perf_ftfp_obj) $(libs)
 	$(CC) -lftfp -L . -o $@ $(CFLAGS) $< ${LDFLAGS}
 
 cycle_test: cycle_test.o $(libs)
-	$(CC) -lftfp -L . -o $@ $(CFLAGS) $< ${LDFLAGS}
+	$(CC) -g -lftfp -L . -o $@ $(CFLAGS) $< ${LDFLAGS}
+
+p_check: p_check.o $(libs)
+	$(CC) -g -lftfp -L . -o $@ $(CFLAGS) $< ${LDFLAGS}
 
 test: $(test_ftfp_obj) $(libs)
 	$(CC) -L . ${CFLAGS} -o $@ $< ${LDFLAGS}
@@ -106,7 +109,12 @@ run_generate_test_helper:
 run_cycle_test: cycle_test libftfp.so
 	scp cycle_test libftfp.so ubuntu@$(REMOTE_IP):~
 	ssh ubuntu@$(REMOTE_IP) "LD_LIBRARY_PATH=. ./cycle_test";
+	scp ubuntu@$(REMOTE_IP):~/ccmp.csv .
 
 run_dut_libftfp: libftfp.so
 	scp libftfp.so ubuntu@$(REMOTE_IP):~
 	(export REMOTE_IP=$(REMOTE_IP); cd dudect-arm; make run_dut_libftfp;)
+	
+run_p_check: p_check
+	scp p_check libftfp.so ubuntu@$(REMOTE_IP):~
+	ssh ubuntu@$(REMOTE_IP) "LD_LIBRARY_PATH=. ./p_check";

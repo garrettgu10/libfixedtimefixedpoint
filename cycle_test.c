@@ -4,9 +4,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include "ftfp.h"
+#include "ftfp_inline.h"
 #include "internal.h"
 
-#define NUM_ITRS 4000
+#define NUM_ITRS 400
 
 static inline uint64_t rdtscp(){
   uint64_t v;
@@ -24,20 +25,33 @@ static inline uint64_t rdtscp(){
   return v;
 }
 
-#define TEST_INTERNALS( code ) \
-  uint64_t st; \
-  uint64_t end; \
- \
-  st = rdtscp(); \
-  code; \
-  end = rdtscp(); \
- \
-  /* Run everything for real, previous was just warmup */ \
- \
-  st = rdtscp(); \
-  code; \
-  end = rdtscp(); \
-  result = (end - st);
+uint64_t x1s[NUM_ITRS * 2];
+int i = 0;
+
+//test for predicated instructions
+static __attribute__((always_inline)) uint64_t ptest(uint64_t a) {
+  uint64_t r;
+  __asm__ (//"and     x4, x0, #0x3;"
+          "mov x2, x1;"
+          "mov x1, #0;"
+          "nop;"
+          "cmp     x0, x1;"
+          //"cmp     x4, #0x2;"
+          //"ccmp    x3, #0x2, #0x0, eq;"
+          //"cset    w2, eq;"
+          // "cmp     x4, #0x3;"
+          // "ccmp    x3, #0x3, #0x0, eq;"
+          // "csinc   w5, w2, wzr, ne;"
+          // "cmp     x0, x1;"
+          // "csinc   w0, w5, wzr, ne;"
+          // "cmp     x4, #0x1;"
+          // "ccmp    x3, #0x1, #0x4, ne;"
+          "csel    w3, w3, wzr, lt;"
+          "mov %0, x2;"
+          : "=r" (r)
+          :);
+  x1s[i++] = r;
+}
 
 #define repeat_1(x) x
 #define repeat_2(x) repeat_1(x) repeat_1(x)
@@ -47,14 +61,27 @@ static inline uint64_t rdtscp(){
 #define repeat_32(x) repeat_16(x) repeat_16(x)
 #define repeat_64(x) repeat_32(x) repeat_32(x)
 
-int use_rand = 1;
+#define TEST_INTERNALS( code ) \
+  uint64_t st; \
+  uint64_t end; \
+ \
+  repeat_16(code;) \
+  \
+  /* Run everything for real, previous was just warmup */ \
+ \
+  st = rdtscp(); \
+  code; \
+  end = rdtscp(); \
+  result = (end - st);
+
+int use_rand = 0;
 fixed rand_fixed() {
   fixed res = 0;
-  fixed fix = 0;
-  repeat_8({
+  fixed fix = -1;
+  for(int i = 0; i < 8; i++){
     res |= rand() & 0xff;
     res <<= 8;
-  });
+  };
   return MASK_UNLESS(use_rand, res) | MASK_UNLESS(!use_rand, fix);
 }
 
@@ -110,6 +137,18 @@ void print_mode(char *name, uint64_t *results, int len) {
   }
 
   printf("%s %ld (%ld-%ld, %.2lf%%)\n", name, max_val, min, max, (double)(max_count) / len * 100);
+  
+  FILE *fout = fopen("ccmp.csv", "w");
+  if(fout == NULL) {
+    perror("fopen");
+  }
+
+  for(int i = 0; i < 300; i++){
+    int res = fprintf(fout, "%ld, %ld\n", x1s[i], results[i]);
+    if(res < 0) perror("fprintf");
+  }
+  int res = fclose(fout);
+  if(res < 0) perror("fclose");
   //print_distribution(results, len);
 }
 
@@ -175,7 +214,7 @@ void run_test_db(char* name, int8_t (*function) (fixed,fixed)){
   print_mode(name, results, NUM_ITRS);
 }
 
-void main(int argc, char* argv[]){
+int main(int argc, char* argv[]){
   srand(0);
   printf(    "function ""  cycles\n");
   printf(    "=================\n");
@@ -221,4 +260,5 @@ void main(int argc, char* argv[]){
 
   run_test_p ("fix_sprint      ",fix_sprint);
   
+  return 0;
 }
