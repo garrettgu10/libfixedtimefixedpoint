@@ -7,7 +7,7 @@
 #include "ftfp_inline.h"
 #include "internal.h"
 
-#define NUM_ITRS 400
+#define NUM_ITRS 40000
 
 static inline uint64_t rdtscp(){
   uint64_t v;
@@ -65,7 +65,7 @@ static __attribute__((always_inline)) uint64_t ptest(uint64_t a) {
   uint64_t st; \
   uint64_t end; \
  \
-  repeat_16(code;) \
+   \
   \
   /* Run everything for real, previous was just warmup */ \
  \
@@ -74,14 +74,14 @@ static __attribute__((always_inline)) uint64_t ptest(uint64_t a) {
   end = rdtscp(); \
   result = (end - st);
 
-int use_rand = 0;
+int use_rand = 1;
 fixed rand_fixed() {
   fixed res = 0;
   fixed fix = -1;
-  for(int i = 0; i < 8; i++){
+  REPEAT_8({
     res |= rand() & 0xff;
     res <<= 8;
-  };
+  });
   return MASK_UNLESS(use_rand, res) | MASK_UNLESS(!use_rand, fix);
 }
 
@@ -136,20 +136,22 @@ void print_mode(char *name, uint64_t *results, int len) {
     if(results[i] > max) max = results[i];
   }
 
-  printf("%s %ld (%ld-%ld, %.2lf%%)\n", name, max_val, min, max, (double)(max_count) / len * 100);
-  
-  FILE *fout = fopen("ccmp.csv", "w");
-  if(fout == NULL) {
-    perror("fopen");
-  }
+  //printf("%s %ld (%ld-%ld, %.2lf%%)\n", name, max_val, min, max, (double)(max_count) / len * 100);
 
-  for(int i = 0; i < 300; i++){
-    int res = fprintf(fout, "%ld, %ld\n", x1s[i], results[i]);
-    if(res < 0) perror("fprintf");
-  }
-  int res = fclose(fout);
-  if(res < 0) perror("fclose");
-  //print_distribution(results, len);
+  printf("[\"%s\", %lf],\n", name, (double)(max_count) / len);
+  
+  // FILE *fout = fopen("ccmp.csv", "w");
+  // if(fout == NULL) {
+  //   perror("fopen");
+  // }
+
+  // for(int i = 0; i < 300; i++){
+  //   int res = fprintf(fout, "%ld, %ld\n", x1s[i], results[i]);
+  //   if(res < 0) perror("fprintf");
+  // }
+  // int res = fclose(fout);
+  // if(res < 0) perror("fclose");
+  // //print_distribution(results, len);
 }
 
 void run_test_d(char* name, fixed (*function) (fixed,fixed)){

@@ -23,6 +23,7 @@ static inline uint64_t rdtscp(){
 uint64_t ptest(uint64_t a) {
     uint64_t res = 0;
   __asm__ volatile (
+          "asr %0, %1, 5;"
           "mov x1, #1;"
           "ccmp %1, x1, 4, eq; "
           "csel    %0, xzr, x1, eq;"
@@ -38,13 +39,13 @@ uint64_t ptest(uint64_t a) {
 
 uint64_t collect_sample(uint64_t group) {
     for(int i = 0; i < 1000; i++){
-        ptest(1);
+        ptest(-1);
     }
 
     uint64_t st,end;
 
     st = rdtscp();
-    ptest(group);
+    ptest(-group);
     end = rdtscp();
 
     return end-st;
