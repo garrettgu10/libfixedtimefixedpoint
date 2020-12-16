@@ -11,3 +11,12 @@ base.py
 *.so
 perf_test
 mul_check/amplified
+p_check
+tmp.txt
+wtf.txt
+.ipynb_checkpoints/non_dit_finder-checkpoint.ipynb
+.vscode/settings.json
+dit_check/output.txt
+mul_check/100k_itrs.zip
+mul_check/mul_check
+cycle_test
